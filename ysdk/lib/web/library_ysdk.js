@@ -166,7 +166,7 @@ let LisGamesSDKLib = {
     })
       .then(function (player) {
         const cplayerInfo = YGDefold.allocateJSON({
-          logged_in: player.getMode() !== 'lite',
+          logged_in: player.isAuthorized(),
           unique_id: player.getUniqueID() ?? "",
           name: player.getName() ?? "",
           photo: {
@@ -306,7 +306,7 @@ let LisGamesSDKLib = {
     ysdk.feedback
       .canReview()
       .then(function (response) {
-          {{{ makeDynCall('viiii', 'handler') }}}(callback, 1, response.value, YGDefold.allocateString(repsonse.reason ?? ''))
+          {{{ makeDynCall('viiii', 'handler') }}}(callback, 1, response.value, YGDefold.allocateString(response.reason ?? ''))
       })
       .catch(function () {
         {{{ makeDynCall('viiii', 'handler') }}}(callback, 0, 0, YGDefold.allocateString(''))
@@ -490,11 +490,8 @@ let LisGamesSDKLib = {
 
   JS_GetLeaderboardDescription: function (handler, callback, cleaderboardName) {
     const leaderboardName = UTF8ToString(cleaderboardName);
-    
-    window.ysdk.getLeaderboards()
-      .then(function (lb) {
-        return lb.getLeaderboardDescription(leaderboardName);
-      })
+
+    window.ysdk.leaderboards.getDescription(leaderboardName)
       .then(function (res) {
         const description = {
           app_id: res.appID,
@@ -503,9 +500,8 @@ let LisGamesSDKLib = {
           decimal_offset: res.description.score_format.options.decimal_offset,
           type: res.description.type,
           name: res.name,
-          title: res.title,  
+          title: res.title,
         };
-        console.log(res,description)
         {{{ makeDynCall('viii', 'handler') }}}(callback, 1, YGDefold.allocateJSON(description))
       })
       .catch(function () {
@@ -518,19 +514,13 @@ let LisGamesSDKLib = {
     const score = parseFloat(UTF8ToString(cscore));
     const extraData = UTF8ToString(cextraData) ?? undefined;
 
-    window.ysdk.getLeaderboards()
-      .then(function (lb) {
-        return lb.setLeaderboardScore(leaderboardName, score, extraData);
-      });
+    window.ysdk.leaderboards.setScore(leaderboardName, score, extraData);
   },
 
   JS_GetLeaderboardPlayerEntry: function (handler, callback, cleaderboardName) {
     const leaderboardName = UTF8ToString(cleaderboardName);
-    
-    window.ysdk.getLeaderboards()
-      .then(function (lb) {
-        return lb.getLeaderboardPlayerEntry(leaderboardName);
-      })
+
+    window.ysdk.leaderboards.getPlayerEntry(leaderboardName)
       .then(function (res) {
         const player_entry = {
           score: res.score,
@@ -562,24 +552,12 @@ let LisGamesSDKLib = {
     const leaderboardName = UTF8ToString(cleaderboardName);
     const params = cparams ? JSON.parse(UTF8ToString(cparams)) : undefined;
 
-    window.ysdk.getLeaderboards()
-      .then(function (lb) {
-        console.log("3", lb,  {
-          includeUser: params?.include_user ?? false,
-          quantityAround: params?.quantity_around ?? 5,
-          quantityTop: params?.quantity_top ?? 5,
-        })
-        return lb.getLeaderboardEntries(
-          leaderboardName,
-          {
-            includeUser: params?.include_user ?? false,
-            quantityAround: params?.quantity_around ?? 5,
-            quantityTop: params?.quantity_top ?? 5,
-          }
-        );
-      })
+    window.ysdk.leaderboards.getEntries(leaderboardName, {
+      includeUser: params?.include_user ?? false,
+      quantityAround: params?.quantity_around ?? 5,
+      quantityTop: params?.quantity_top ?? 5,
+    })
       .then(function (res) {
-        console.log("4", res)
         const entries = {
           leaderboard: {
             app_id: res.leaderboard.app_id,
@@ -588,7 +566,7 @@ let LisGamesSDKLib = {
             decimal_offset: res.leaderboard.description.score_format.options.decimal_offset,
             type: res.leaderboard.description.type,
             name: res.leaderboard.description.name,
-            title: res.leaderboard.description.title,  
+            title: res.leaderboard.description.title,
           },
           ranges: res.ranges,
           user_rank: res.userRank,
@@ -614,7 +592,6 @@ let LisGamesSDKLib = {
             };
           }),
         }
-        console.log("5", entries);
         {{{ makeDynCall('viii', 'handler') }}}(callback, 1, YGDefold.allocateJSON(entries))
       })
       .catch(function () {

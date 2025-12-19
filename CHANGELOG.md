@@ -8,6 +8,13 @@ All notable changes to this project will be documented in this file.
 
 - `ysdk.sdk_url` setting in `game.project` to override the URL the Yandex Games SDK is loaded from
 
+### Fixed
+
+- Replaced deprecated `player.getMode()` with `player.isAuthorized()` for checking login status
+- Replaced deprecated `ysdk.getLeaderboards()` with direct `ysdk.leaderboards` API calls
+- Fixed typo in `JS_CanReview` (`repsonse` -> `response`)
+- Removed debug `console.log` statements from production code
+
 ## [1.3.0] - 2024.12.1
 
 ### Added
