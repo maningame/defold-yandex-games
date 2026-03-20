@@ -1357,6 +1357,25 @@ static int CPP_GetLeaderboardDescription(lua_State *L) {
 // Set Leaderboard Score
 // ===============================================
 
+static void
+CPP_SetLeaderboardScore_Handler(dmScript::LuaCallbackInfo *callback,
+                                const int success) {
+  if (!callback) return;
+
+  lua_State *L = dmScript::GetCallbackLuaContext(callback);
+
+  if (!dmScript::SetupCallback(callback)) {
+    dmLogError("Failed to setup callback");
+    return;
+  }
+
+  lua_pushboolean(L, success);
+
+  dmScript::PCall(L, 2, 0);
+
+  dmScript::TeardownCallback(callback);
+}
+
 static int CPP_SetLeaderboardScore(lua_State *L) {
   int top = lua_gettop(L);
 
@@ -1365,7 +1384,14 @@ static int CPP_SetLeaderboardScore(lua_State *L) {
   const char *score = lua_tolstring(L, 2, NULL);
   const char *extraData = lua_tolstring(L, 3, NULL);
 
-  JS_SetLeaderboardScore(leaderboardName, score, extraData);
+  dmScript::LuaCallbackInfo *callback = NULL;
+  if (lua_gettop(L) >= 4 && lua_isfunction(L, 4)) {
+    callback = dmScript::CreateCallback(L, 4);
+  }
+
+  JS_SetLeaderboardScore(
+      (SetLeaderboardScoreHandler)CPP_SetLeaderboardScore_Handler,
+      callback, leaderboardName, score, extraData);
 #endif
 
   assert(top == lua_gettop(L));

@@ -312,8 +312,13 @@ void JS_GetLeaderboardDescription(GetLeaderboardDescriptionHandler handler,
 // Set Leaderboard Score
 // ===============================================
 
+typedef void (*SetLeaderboardScoreHandler)(dmScript::LuaCallbackInfo *callback,
+                                            const int success);
+
 extern "C" {
-void JS_SetLeaderboardScore(const char *leaderboardName, const char *score,
+void JS_SetLeaderboardScore(SetLeaderboardScoreHandler handler,
+                            dmScript::LuaCallbackInfo *callback,
+                            const char *leaderboardName, const char *score,
                             const char *extraData);
 }
 

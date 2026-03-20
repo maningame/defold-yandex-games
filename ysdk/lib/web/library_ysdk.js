@@ -509,12 +509,22 @@ let LisGamesSDKLib = {
       });
   },
 
-  JS_SetLeaderboardScore: function (cleaderboardName, cscore, cextraData) {
+  JS_SetLeaderboardScore: function (handler, callback, cleaderboardName, cscore, cextraData) {
     const leaderboardName = UTF8ToString(cleaderboardName);
     const score = parseFloat(UTF8ToString(cscore));
     const extraData = UTF8ToString(cextraData) ?? undefined;
 
-    window.ysdk.leaderboards.setScore(leaderboardName, score, extraData);
+    window.ysdk.leaderboards.setScore(leaderboardName, score, extraData)
+      .then(function () {
+        if (callback) {
+          {{{ makeDynCall('vii', 'handler') }}}(callback, 1)
+        }
+      })
+      .catch(function () {
+        if (callback) {
+          {{{ makeDynCall('vii', 'handler') }}}(callback, 0)
+        }
+      });
   },
 
   JS_GetLeaderboardPlayerEntry: function (handler, callback, cleaderboardName) {
