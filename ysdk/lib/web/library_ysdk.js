@@ -118,10 +118,10 @@ let LisGamesSDKLib = {
             id: product.id,
             title: product.title,
             description: product.description,
-            image_uri: product.image_uri,
+            image_uri: product.imageURI,
             price: product.price,
-            price_value: product.price_value,
-            price_currency_code: product.price_currency_code,
+            price_value: product.priceValue,
+            price_currency_code: product.priceCurrencyCode,
             price_currency_image: {
               small: product.getPriceCurrencyImage("small"),
               medium: product.getPriceCurrencyImage("medium"),
@@ -280,11 +280,11 @@ let LisGamesSDKLib = {
 
   JS_IncrementPlayerStats: function (cstats) {
     const stats = JSON.parse(UTF8ToString(cstats));
-    
+
     window.ysdk
       .getPlayer()
       .then(function (player) {
-        player.setStats(stats);
+        player.incrementStats(stats);
       });
   },
 
@@ -333,7 +333,8 @@ let LisGamesSDKLib = {
       app: window.ysdk.environment.app,
       browser: window.ysdk.environment.browser,
       i18n: window.ysdk.environment.i18n,
-      payload: window.ysdk.environment.payload,  
+      payload: window.ysdk.environment.payload,
+      referrer: window.ysdk.environment.referrer,
     };
     return YGDefold.allocateString(JSON.stringify(environment));
   },
@@ -403,12 +404,20 @@ let LisGamesSDKLib = {
 //#region Events
 
   JS_InitEvents: function (callEventCallback, destroyEventCallback) {
-    const EVENTS = {
-      "GAME_API_PAUSE": new Map(),
-      "GAME_API_RESUME": new Map(),
-      "EXIT": new Map(),
-      "HISTORY_BACK": new Map()
+    const SDK_EVENT_NAMES = {
+      "GAME_API_PAUSE": "game_api_pause",
+      "GAME_API_RESUME": "game_api_resume",
+      "EXIT": "EXIT",
+      "HISTORY_BACK": "HISTORY_BACK",
+      "ACCOUNT_SELECTION_DIALOG_OPENED": "ACCOUNT_SELECTION_DIALOG_OPENED",
+      "ACCOUNT_SELECTION_DIALOG_CLOSED": "ACCOUNT_SELECTION_DIALOG_CLOSED"
     };
+
+    const EVENTS = {};
+
+    for (const eventName of Object.keys(SDK_EVENT_NAMES)) {
+      EVENTS[eventName] = new Map();
+    }
 
     YGDefold.events = {
       checkEventName: function (eventName) {
@@ -437,29 +446,20 @@ let LisGamesSDKLib = {
       },
     }
 
-    ysdk.on("game_api_pause", function () {
-      for (const [, callback] of EVENTS["GAME_API_PAUSE"]) {
-        {{{ makeDynCall('vi', 'callEventCallback') }}}(callback);
-      }
-    });
+    for (const eventName of Object.keys(SDK_EVENT_NAMES)) {
+      const handlers = EVENTS[eventName];
 
-    ysdk.on("game_api_resume", function () {
-      for (const [, callback] of EVENTS["GAME_API_RESUME"]) {
-        {{{ makeDynCall('vi', 'callEventCallback') }}}(callback);
+      try {
+        ysdk.on(SDK_EVENT_NAMES[eventName], function () {
+          for (const [, callback] of handlers) {
+            {{{ makeDynCall('vi', 'callEventCallback') }}}(callback);
+          }
+        });
+      } catch (err) {
+        // Событие не поддерживается текущей версией SDK — остальные подписки не ломаем.
+        console.warn(`Yandex Games SDK: can't subscribe to ${eventName}.`, err);
       }
-    });
-
-    ysdk.on("EXIT", function () {
-      for (const [, callback] of EVENTS["EXIT"]) {
-        {{{ makeDynCall('vi', 'callEventCallback') }}}(callback);
-      }
-    });
-
-    ysdk.on("HISTORY_BACK", function () {
-      for (const [, callback] of EVENTS["HISTORY_BACK"]) {
-        {{{ makeDynCall('vi', 'callEventCallback') }}}(callback);
-      }
-    });
+    }
   },
 
   JS_OnEvent: function (ceventName, cPointer, callback) {
@@ -547,8 +547,8 @@ let LisGamesSDKLib = {
             large: res.player.getAvatarSrcSet("large"),
           },
           lang: res.player.lang,
-          public_name: res.player.public_name,
-          unique_id: res.player.unique_id,
+          public_name: res.player.publicName,
+          unique_id: res.player.uniqueID,
           formattedScore: res.formattedScore,
         }
         {{{ makeDynCall('viii', 'handler') }}}(callback, 1, YGDefold.allocateJSON(player_entry))

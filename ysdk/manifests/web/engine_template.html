@@ -3,42 +3,110 @@
   <body>
     <script id="engine-start" type="text/javascript" merge="keep">
       var loaded = false;
+      var is_retried = false;
       var sdk_url = "";
-      var script = document.createElement("script");
-      script.type = "text/javascript";
+      var SDK_TIMEOUT = 20000;
       // {{#ysdk.sdk_url}}
       sdk_url = "{{{ysdk.sdk_url}}}";
       // {{/ysdk.sdk_url}}
-      if (sdk_url) {
-        script.src = sdk_url;
-      } else if (location.href.includes("localhost") || location.href.includes("127.0.0.1")) {
-        script.src = "https://sdk.games.s3.yandex.net/sdk.js";
-      } else {
-        script.src = "/sdk.js";
+
+      if (!sdk_url) {
+        if (location.href.includes("localhost") || location.href.includes("127.0.0.1")) {
+          sdk_url = "https://sdk.games.s3.yandex.net/sdk.js";
+        } else {
+          sdk_url = "/sdk.js";
+        }
       }
-      script.onload = function () {
-        YaGames.init().then(function (ysdk) {
-          window.ysdk = ysdk;
-          ysdk
-            .getStorage()
-            .then((safeStorage) =>
-              Object.defineProperty(window, "localStorage", {
-                get: () => safeStorage,
+
+      function ysdk_start_engine() {
+        if (loaded) {
+          return;
+        }
+
+        loaded = true;
+
+        if (typeof load_engine === "function") {
+          load_engine();
+        } else {
+          EngineLoader.load("canvas", "{{exe-name}}");
+        }
+      }
+
+      function ysdk_show_error(reason) {
+        if (loaded || document.getElementById("ysdk-error")) {
+          return;
+        }
+
+        console.error("Yandex Games SDK: " + reason);
+
+        var message = document.createElement("div");
+        message.id = "ysdk-error";
+        message.setAttribute(
+          "style",
+          "position:fixed;left:0;top:0;right:0;bottom:0;z-index:9999;display:flex;flex-direction:column;align-items:center;" +
+            "justify-content:center;gap:16px;padding:24px;text-align:center;background:#000;color:#fff;" +
+            "font:16px/1.4 sans-serif"
+        );
+        message.textContent = "Не удалось загрузить SDK Яндекс Игр. Failed to load the Yandex Games SDK.";
+
+        var button = document.createElement("button");
+        button.setAttribute("style", "padding:12px 24px;font:inherit;cursor:pointer");
+        button.textContent = "Обновить / Reload";
+        button.onclick = function () {
+          location.reload();
+        };
+
+        message.appendChild(button);
+        document.body.appendChild(message);
+      }
+
+      function ysdk_init() {
+        YaGames.init()
+          .then(function (ysdk) {
+            window.ysdk = ysdk;
+
+            return ysdk
+              .getStorage()
+              .then(function (safeStorage) {
+                Object.defineProperty(window, "localStorage", {
+                  get: function () {
+                    return safeStorage;
+                  },
+                });
               })
-            )
-            .then(() => {
-              if (!loaded) {
-                if (typeof load_engine === "function") {
-                  load_engine();
-                } else {
-                  EngineLoader.load("canvas", "{{exe-name}}");
-                }
-                loaded = true;
-              }
-            });
-        });
-      };
-      document.head.appendChild(script);
+              .catch(function (err) {
+                // Без безопасного хранилища игра всё ещё работоспособна.
+                console.warn("Yandex Games SDK: safe storage is unavailable.", err);
+              });
+          })
+          .then(ysdk_start_engine)
+          .catch(function (err) {
+            ysdk_show_error("initialization failed. " + err);
+          });
+      }
+
+      function ysdk_load() {
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = sdk_url;
+        script.onload = ysdk_init;
+        script.onerror = function () {
+          if (!is_retried) {
+            is_retried = true;
+            ysdk_load();
+            return;
+          }
+
+          ysdk_show_error("failed to load " + sdk_url);
+        };
+        document.head.appendChild(script);
+      }
+
+      ysdk_load();
+
+      setTimeout(function () {
+        ysdk_show_error("initialization timed out");
+      }, SDK_TIMEOUT);
     </script>
   </body>
 </html>

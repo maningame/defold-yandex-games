@@ -315,6 +315,30 @@
               type: string
               desc: The top-level domain of the browser.
 
+        - name: payload
+          type: string
+          desc: The value of the payload parameter from the game URL.
+
+        - name: referrer
+          type: table
+          desc: Parameters of the promo deeplink the player came from. Present only for promo transitions.
+          members:
+            - name: type
+              type: string
+              desc: Always "promo".
+
+            - name: promoId
+              type: string
+              desc: The ID of the promo from the developer console.
+
+            - name: intent
+              type: string
+              desc: Arbitrary routing hint of the promo, for example "open_starter_pack".
+
+            - name: inappId
+              type: string
+              desc: The ID of the in-app purchase the promo is bound to.
+
     # ===============================================
     # Advertising
     # ===============================================
@@ -413,7 +437,9 @@
       parameters:
         - name: eventName
           type: string
-          desc: The name of the event to listen for.
+          desc: >
+            The name of the event to listen for. One of GAME_API_PAUSE, GAME_API_RESUME, EXIT,
+            HISTORY_BACK, ACCOUNT_SELECTION_DIALOG_OPENED, ACCOUNT_SELECTION_DIALOG_CLOSED.
 
         - name: listener
           type: function

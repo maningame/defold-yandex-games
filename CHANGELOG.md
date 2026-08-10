@@ -7,6 +7,9 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - `ysdk.sdk_url` setting in `game.project` to override the URL the Yandex Games SDK is loaded from
+- `ACCOUNT_SELECTION_DIALOG_OPENED` and `ACCOUNT_SELECTION_DIALOG_CLOSED` events
+- `environment.referrer` with the parameters of the promo deeplink the player came from
+- Retry, timeout and an on-screen error message instead of a blank page when the SDK fails to load
 
 ### Fixed
 
@@ -14,6 +17,12 @@ All notable changes to this project will be documented in this file.
 - Replaced deprecated `ysdk.getLeaderboards()` with direct `ysdk.leaderboards` API calls
 - Fixed typo in `JS_CanReview` (`repsonse` -> `response`)
 - Removed debug `console.log` statements from production code
+- `feedback.can_review` and `get_flags` called their callbacks with a wrong argument count
+- `player.increment_stats` overwrote the stats instead of incrementing them (`setStats` -> `incrementStats`)
+- `leaderboards.get_player_entry` returned no public name and unique id (`publicName`, `uniqueID`)
+- `payments.get_catalog` returned no image, price value and currency code (`imageURI`, `priceValue`,
+  `priceCurrencyCode`)
+- A single unsupported event no longer breaks the subscription to the remaining ones
 
 ## [1.3.0] - 2024.12.1
 

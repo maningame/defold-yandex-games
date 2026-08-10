@@ -22,7 +22,10 @@ latest development news and take part in surveys!
 
 ## Fork changes
 
-This is a Maningame fork of the official plugin. Changes on top of the upstream `v1.3.0`:
+This is a Maningame fork of the official plugin, which has seen no commits since December 2024. On top of
+the upstream `v1.3.0` it carries the fixes below and the two commits from
+[Vallix/yandex-games-defold](https://github.com/Vallix/yandex-games-defold). See `CHANGELOG.md` for the
+full list.
 
 ### `sdk_url` setting
 
