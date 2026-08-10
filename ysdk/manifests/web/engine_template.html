@@ -3,9 +3,15 @@
   <body>
     <script id="engine-start" type="text/javascript" merge="keep">
       var loaded = false;
+      var sdk_url = "";
       var script = document.createElement("script");
       script.type = "text/javascript";
-      if (location.href.includes("localhost") || location.href.includes("127.0.0.1")) {
+      // {{#ysdk.sdk_url}}
+      sdk_url = "{{{ysdk.sdk_url}}}";
+      // {{/ysdk.sdk_url}}
+      if (sdk_url) {
+        script.src = sdk_url;
+      } else if (location.href.includes("localhost") || location.href.includes("127.0.0.1")) {
         script.src = "https://sdk.games.s3.yandex.net/sdk.js";
       } else {
         script.src = "/sdk.js";

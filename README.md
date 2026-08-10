@@ -19,3 +19,23 @@ Check out the [Documentation](https://plugins.lisgames.ru/) to get more info abo
 
 Feel free to join our [Telegram Chat](https://t.me/yandexgamesplugins) to keep in touch with us, get the
 latest development news and take part in surveys!
+
+## Fork changes
+
+This is a Maningame fork of the official plugin. Changes on top of the upstream `v1.3.0`:
+
+### `sdk_url` setting
+
+Upstream loads `/sdk.js` in production and the absolute `https://sdk.games.s3.yandex.net/sdk.js` on
+localhost only. That works for games uploaded to Yandex as an archive, but not for iframe games served from
+their own domain — those need the absolute URL in production too, which used to require patching the built
+`index.html`.
+
+Set the URL in `game.project` instead:
+
+```ini
+[ysdk]
+sdk_url = https://sdk.games.s3.yandex.net/sdk.js
+```
+
+Leave the setting empty (or omit the section) to keep the upstream behaviour.

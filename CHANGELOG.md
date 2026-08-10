@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] - Maningame fork
+
+### Added
+
+- `ysdk.sdk_url` setting in `game.project` to override the URL the Yandex Games SDK is loaded from
+
 ## [1.3.0] - 2024.12.1
 
 ### Added
