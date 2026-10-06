@@ -28,6 +28,45 @@
               type: function
               desc: Signals the moment when the gameplay has stopped or paused.
 
+        - name: games_api
+          type: table
+          members:
+            - name: get_all_games
+              type: function
+              desc: Retrieves the developer's games available on the platform.
+              parameters:
+                - name: callback
+                  type: function
+                  desc: A function that will be called with the games.
+                  parameters:
+                    - name: self
+                      type: object
+                      desc: The calling script instance.
+
+                    - name: result
+                      type: table|nil
+                      desc: Games and the developer link, nil if the request failed.
+
+            - name: get_game_by_id
+              type: function
+              desc: Retrieves one of the developer's games by its ID.
+              parameters:
+                - name: id
+                  type: integer
+                  desc: The game ID.
+
+                - name: callback
+                  type: function
+                  desc: A function that will be called with the game.
+                  parameters:
+                    - name: self
+                      type: object
+                      desc: The calling script instance.
+
+                    - name: result
+                      type: table|nil
+                      desc: The game and its availability, nil if the request failed.
+
     # ===============================================
     # Payments
     # ===============================================
@@ -44,6 +83,10 @@
               type: function
               desc: A function that will be called when the purchase is complete or canceled.
               parameters:
+                - name: self
+                  type: object
+                  desc: The calling script instance.
+
                 - name: purchase
                   type: table
                   desc: Purchase information.
@@ -60,6 +103,11 @@
                       type: string
                       optional: true
                       desc: Optional parameter. Additional purchase data that you want to send to your server (transferred in the signature parameter).
+
+                - name: signature
+                  type: string
+                  optional: true
+                  desc: Signed purchase data, when the purchase is signed. Nil if the purchase failed.
 
             - name: options
               type: table
@@ -82,14 +130,39 @@
         - name: get_purchases
           type: function
           desc: Retrieves a list of available products.
-          args:
+          parameters:
             - name: callback
               type: function
               desc: A function that will be called with the list of products.
               parameters:
+                - name: self
+                  type: object
+                  desc: The calling script instance.
+
                 - name: products
                   type: table
                   desc: A table containing the list of products.
+
+                - name: signature
+                  type: string
+                  optional: true
+                  desc: Signed purchase data, when the purchase is signed. Nil if the purchase failed.
+
+        - name: get_catalog
+          type: function
+          desc: Retrieves the catalog of all products available for purchase.
+          parameters:
+            - name: callback
+              type: function
+              desc: A function that will be called with the catalog.
+              parameters:
+                - name: self
+                  type: object
+                  desc: The calling script instance.
+
+                - name: products
+                  type: table|nil
+                  desc: A list of products, nil if the request failed.
 
         - name: consume_purchase
           type: function
@@ -104,6 +177,10 @@
               optional: true
               desc: A function that will be called when the purchase is consumed.
               parameters:
+                - name: self
+                  type: object
+                  desc: The calling script instance.
+
                 - name: success
                   type: boolean
                   desc: True if the purchase was successfully consumed.
@@ -124,6 +201,10 @@
               type: function
               desc: A function that will be called with the player's information.
               parameters:
+                - name: self
+                  type: object
+                  desc: The calling script instance.
+
                 - name: info
                   type: table
                   desc: A table containing the player's information.
@@ -164,6 +245,10 @@
               type: function
               desc: A function that will be called when the dialog is closed.
               parameters:
+                - name: self
+                  type: object
+                  desc: The calling script instance.
+
                 - name: authorized
                   type: boolean
                   desc: True if the player has been authorized.
@@ -176,6 +261,10 @@
               type: function
               desc: A function that will be called with the list of player IDs.
               parameters:
+                - name: self
+                  type: object
+                  desc: The calling script instance.
+
                 - name: ids
                   type: table
                   desc: User IDs list for all of the developer's games in which they have explicitly granted access to their personal data.
@@ -188,6 +277,10 @@
               type: function
               desc: A function that will be called with the player's data.
               parameters:
+                - name: self
+                  type: object
+                  desc: The calling script instance.
+
                 - name: data
                   type: table
                   desc: A table containing the player's data.
@@ -218,6 +311,10 @@
               type: function
               desc: A function that will be called with the player's statistics.
               parameters:
+                - name: self
+                  type: object
+                  desc: The calling script instance.
+
                 - name: stats
                   type: table
                   desc: A table containing the player's statistics.
@@ -259,6 +356,10 @@
               type: function
               desc: A function that will be called with the result.
               parameters:
+                - name: self
+                  type: object
+                  desc: The calling script instance.
+
                 - name: can_review
                   type: boolean
                   desc: True if the player can leave a review.
@@ -275,6 +376,10 @@
               type: function
               desc: A function that will be called with the result.
               parameters:
+                - name: self
+                  type: object
+                  desc: The calling script instance.
+
                 - name: feedback_sent
                   type: boolean
                   desc: True if player has sent feedback.
@@ -359,21 +464,45 @@
                   type: function
                   optional: true
                   desc: Called when an ad is opened successfully.
+                  parameters:
+                    - name: self
+                      type: object
+                      desc: The calling script instance.
 
                 - name: on_close
                   type: function
                   optional: true
                   desc: Called when an ad is closed, an error occurred, or an ad failed to open due to too frequent calls.
+                  parameters:
+                    - name: self
+                      type: object
+                      desc: The calling script instance.
+
+                    - name: was_shown
+                      type: boolean
+                      desc: True if the ad was shown.
 
                 - name: on_error
                   type: function
                   optional: true
                   desc: Called when an error occurs.
+                  parameters:
+                    - name: self
+                      type: object
+                      desc: The calling script instance.
+
+                    - name: error
+                      type: string
+                      desc: The error message.
 
                 - name: on_offline
                   type: function
                   optional: true
                   desc: Called when the network connection is lost (when offline mode is enabled).
+                  parameters:
+                    - name: self
+                      type: object
+                      desc: The calling script instance.
         
         - name: show_rewarded_video
           type: function
@@ -387,21 +516,41 @@
                   type: function
                   optional: true
                   desc: Called when a video ad is displayed on the screen.
+                  parameters:
+                    - name: self
+                      type: object
+                      desc: The calling script instance.
 
                 - name: on_close
                   type: function
                   optional: true
                   desc: Called when a user closes a video ad.
+                  parameters:
+                    - name: self
+                      type: object
+                      desc: The calling script instance.
 
                 - name: on_rewarded
                   type: function
                   optional: true
                   desc: Called when a video ad impression is counted. Use this function to specify a reward for viewing the video ad.
+                  parameters:
+                    - name: self
+                      type: object
+                      desc: The calling script instance.
 
                 - name: on_error
                   type: function
                   optional: true
                   desc: Called when an error occurs.
+                  parameters:
+                    - name: self
+                      type: object
+                      desc: The calling script instance.
+
+                    - name: error
+                      type: string
+                      desc: The error message.
         
         - name: get_banner_adv_status
           type: function
@@ -411,6 +560,10 @@
               type: function
               desc: A function that will be called with the status of the sticky banner ad.
               parameters:
+                - name: self
+                  type: object
+                  desc: The calling script instance.
+
                 - name: sticky_adv_is_showing
                   type: boolean
                   desc: True if the sticky banner ad is showing.
@@ -444,6 +597,10 @@
         - name: listener
           type: function
           desc: The function to call when the event is dispatched.
+          parameters:
+            - name: self
+              type: object
+              desc: The calling script instance.
 
     - name: off_event
       type: function
@@ -456,6 +613,10 @@
         - name: listener
           type: function
           desc: The function to call when the event is dispatched.
+          parameters:
+            - name: self
+              type: object
+              desc: The calling script instance.
     
     - name: dispatch_event
       type: function
@@ -490,6 +651,10 @@
               type: function
               desc: A function that will be called with the leaderboard description.
               parameters:
+                - name: self
+                  type: object
+                  desc: The calling script instance.
+
                 - name: description
                   type: table
                   desc: The leaderboard description.
@@ -559,6 +724,10 @@
               type: function
               desc: A function that will be called with the player's entry.
               parameters:
+                - name: self
+                  type: object
+                  desc: The calling script instance.
+
                 - name: player_entry
                   type: table
                   desc: The player's entry.
@@ -578,6 +747,10 @@
               type: function
               desc: A function that will be called with the leaderboard entries.
               parameters:
+                - name: self
+                  type: object
+                  desc: The calling script instance.
+
                 - name: entries
                   type: table
                   desc: The leaderboard entries.
@@ -675,6 +848,10 @@
               type: function
               desc: A function that will be called with the result.
               parameters:
+                - name: self
+                  type: object
+                  desc: The calling script instance.
+
                 - name: accepted
                   type: boolean
                   desc: True if the player accepted the prompt.
@@ -797,6 +974,22 @@
           type: function
           desc: A function that will be called with the flags.
           parameters:
+            - name: self
+              type: object
+              desc: The calling script instance.
+
             - name: flags
               type: table
               desc: A table containing the flags. 
+
+    # ===============================================
+    # Server time
+    # ===============================================
+
+    - name: server_time
+      type: function
+      desc: Returns the server time.
+      returns:
+        - name: time
+          type: number
+          desc: Milliseconds since the Unix epoch, 0 if the SDK is not ready.
